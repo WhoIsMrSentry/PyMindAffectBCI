@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mindaffectBCI"
+version = "0.9.24"
+description = "The MindAffect BCI python SDK"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "Jason Farquhar", email = "jason@mindaffect.nl"}
+]
+maintainers = [
+    {name = "Emir Hamurcu", email = "sentrycoder.dev0@gmail.com"}
+]
+dependencies = [
+    "numpy>=1.0.2",
+    "pyglet>=1.2",
+    "scipy>=1.0",
+    "brainflow>=3.0",
+    "matplotlib>=3.0",
+    "scikit-learn>=0.22.2.post1"
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "http://github.com/mindaffect/pymindaffectBCI"
+Repository = "http://github.com/mindaffect/pymindaffectBCI"
+
+[project.scripts]
+online_bci = "mindaffectBCI.online_bci:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+mindaffectBCI = [
+    "configs/*.json",
+    "resources/stimuli/*.txt",
+    "*.png",
+    "hub/*",
+    "decoder/*.pk"
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py38"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
