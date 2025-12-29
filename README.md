@@ -1,11 +1,11 @@
-mindaffectBCI
-=============
+# mindaffectBCI
 
-End of support notice
-----------------------------------
-We no longer maintain and provide support for this repository. The contents are still online for historical purposes only.
+## Maintainer Notice
+**This repository has been modernized and is now maintained by Emir Hüseyin.**
 
-Info
+The codebase has been refactored to follow modern Python packaging standards with improved modularity.
+
+## Info
 ----------------------------------
 
 This repository contains the python SDK code for the Brain Computer Interface (BCI) developed by the company `Mindaffect <https://mindaffect.nl>`_.
@@ -17,27 +17,25 @@ Online Documentation and Tutorials
 ----------------------------------
 Available at: `https://mindaffect-bci.readthedocs.io/ <https://mindaffect-bci.readthedocs.io/en/latest/tutorials.html>`_
 
-Installation
-------------
+## Installation
 
-To install from **source** (currently the recommended method):
-  1. Clone or download this repository::
+### From Source (Recommended)
 
-       git clone https://github.com/mindaffect/pymindaffectBCI
+1. Clone or download this repository:
+   ```bash
+   git clone https://github.com/mindaffect/pymindaffectBCI
+   cd pymindaffectBCI
+   ```
 
-  2. Install the necessary bits to your local python path:
+2. Install the package:
+   ```bash
+   pip install -e .
+   ```
 
-    1. change to the directory where you cloned the repository.
-
-    #. Add this module to the python path, and install dependencies::
-   
-         pip install -e .
-  
-  3. Install a JAVA JVM, such as `this one <https://adoptopenjdk.net/index.html?variant=openjdk15&jvm>`_
-
-To install as a python library::
-
-    pip install --upgrade mindaffectBCI
+### From PyPI
+```bash
+pip install --upgrade mindaffectBCI
+```
 
 Try the off-line analysis on-line on binder.
 
@@ -73,7 +71,7 @@ Important: FrameRate Check
 
 For rapid visual stimulation BCI (like the noisetagging BCI), it is *very* important that the visual flicker be displayed *accurately*.  However, as the graphics performance of computers varies widely it is hard to know in advance if a particular configuration is accurate enough.  To help with this we also provide a graphics performance checker, which will validate that your graphics system is correctly configured.  You can run this with::
 
-  python3 -m mindaffectBCI.examples.presentation.framerate_check
+  python3 -m mindaffectBCI.presentation.framerate_check
 
 As this runs it will show in a window your current graphics frame-rate and, more importantly, the variability in the frame times.  For good BCI performance this jitter should be <1ms.  If you see jitter greater than this you should probably adjust your graphics card settings.  The most important setting to consider is to be sure that you  have `_vsync_ <https://en.wikipedia.org/wiki/Screen_tearing#Vertical_synchronization>` *turned-on*.  Many graphics cards turn this off by default, as it (in theory) gives higher frame rates for gaming.  However, for our system, frame-rate is less important than *exact*  timing, hence always turn vsync on for visual Brain-Compuber-Interfaces!
 
@@ -105,28 +103,216 @@ If you run into and issue you can either directly raise an issue on the projects
       :target: https://gitter.im/mindaffect/pymindaffectBCI?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
 
-File Structure
---------------
-This repository is organized roughly as follows:
+## File Structure
 
-- `mindaffectBCI <mindaffectBCI>`_ - contains the python package containing the mindaffectBCI SDK.  Important modules within this package are: 
-  - `noisetag.py <mindaffectBCI/noisetag.py>`_ - This module contains the main API for developing User Interfaces with BCI control
-  - `utopiaController.py <minaffectBCI/utopiaController.py>`_ - This module contains the application level APIs for interacting with the MindAffect Decoder.
-  - `utopiaclient.py <mindaffectBCI/utopiaclient.py>`_ - This module contains the low-level networking functions for communicating with the MindAffect Decoder - which is normally a separate computer running the eeg analysis software.
-  - stimseq.py -- This module contains the low-level functions for loading and codebooks - which define how the presented stimuli will look.
+This repository follows a modern `src`-based layout with modular organization:
 
-- `decoder <mindaffectBCI/decoder>`_ - contains our open source python based Brain Computer Interface decoder, for both on-line and off-line analysis of neuro-imaging data. Important modules within this package are:
-  - `decoder.py <mindaffectBCI/decoder/decoder.py>`_ - This module contains the code for the on-line decoder.
-  - `offline_analysis.ipynb <mindaffectBCI/decoder/offline_analysis.ipynb>`_ - This `juypter <https://jupyter.org/>`_ notebook contains to run an off-line analysis of previously saved data from the mindaffectBCI or other publically available BCI datasets. 
-   
-- `examples <mindaffectBCI/examples/>`_ - contains python based examples for Presentation and Output parts of the BCI. Important sub-directories
-   - `output <mindaffectBCI/examples/output/>`_ - Example output modules.  An output module translates BCI based selections into actions.
-   - `presentation <mindaffectBCI/examples/presentation/>`_ - Example presentation modules.  A presentation module, presents the BCI stimulus to the user, and is normally the main UI.  In particular here we have:
-     - `framerate_check.py <mindaffectBCI/examples/presentation/framerate_check.py>`_ - Which you can run to test if your display settings (particularly vsync) are correct for accurate flicker presentation.
-     - `selectionMatrix.py <mindaffectBCI/examples/presentation/selectionMatrix.py>`_ - Which you can run as a simple example of using the mindaffectBCI to select letters from an on-screen grid.
+```
+PyMindAffectBCI/
+├── src/mindaffectBCI/        # Main package
+│   ├── utopia/               # Network communication
+│   │   ├── utopiaclient.py   # Low-level messaging
+│   │   └── utopiaController.py # High-level API
+│   ├── stimulus/             # Stimulus sequence generation
+│   │   └── stimseq.py
+│   ├── acquisition/          # EEG hardware drivers
+│   ├── presentation/         # UI modules
+│   │   └── selectionMatrix.py # Selection interface
+│   ├── output/               # Action handlers
+│   ├── decoder/              # BCI decoder & analysis
+│   │   └── decoder.py        # Online decoder
+│   ├── hub/                  # Central hub
+│   ├── configs/              # Configuration files (.json)
+│   ├── resources/
+│   │   └── stimuli/          # Stimulus sequences (.txt)
+│   ├── noisetag.py           # Main BCI API
+│   └── online_bci.py         # Entry point
+├── examples/                 # Example scripts
+│   └── utilities/
+├── docs/                     # Documentation
+└── tests/                    # Test files
+```
 
-   - `utilities <mindaffectBCI/examples/utilities/>`_ - Useful utilities, such as a simple *raw* signal viewer
-   - `acquisition <mindaffectBCI/examples/acquisition/>`_ - Example data acquisition modules.  An acquisition module interfaces with the EEG measurment hardware and streams time-stamped data to the hub.
+### Key Modules
+
+- **noisetag.py** - Main API for developing BCI-controlled UIs
+- **utopia/** - Communication with MindAffect decoder
+- **stimulus/** - Stimulus codebook management  
+- **acquisition/** - EEG hardware interface drivers
+- **presentation/** - User interface examples
+- **decoder/** - Open-source BCI decoder
+
+## Module Descriptions
+
+### Core BCI API
+
+#### `noisetag.py`
+Main high-level API for developing BCI applications. Provides:
+- **Noisetag class**: Main interface for BCI control
+- Finite State Machine (FSM) for BCI workflow management
+- Automatic calibration and prediction phases
+- Event handling and selection callbacks
+- Simple integration for UI developers
+
+**Example Usage:**
+```python
+from mindaffectBCI import Noisetag
+
+nt = Noisetag()
+nt.connect()  # Connect to decoder
+nt.setnumActiveObjIDs(9)  # 9 selectable objects
+nt.startCalibration()  # Run calibration
+nt.startPrediction()  # Start prediction mode
+```
+
+### Network Communication (`utopia/`)
+
+#### `utopiaclient.py`
+Low-level networking and message protocol:
+- Message serialization/deserialization
+- Socket communication with hub
+- Message types: StimulusEvent, DataPacket, Selection, etc.
+- Timestamp synchronization
+
+#### `utopiaController.py`
+High-level controller for decoder interaction:
+- Simplified API for sending/receiving messages
+- Event handlers for predictions and selections  
+- Automatic connection management
+- Signal quality monitoring
+
+**Example Usage:**
+```python
+from mindaffectBCI.utopia import UtopiaController
+
+uc = UtopiaController()
+uc.autoconnect()
+uc.sendStimulusEvent([1, 0, 1, 0], timestamp=None)
+msgs = uc.getNewMessages()
+```
+
+### Stimulus Generation (`stimulus/`)
+
+#### `stimseq.py`
+Manages stimulus sequences (codebooks):
+- Loads pre-defined stimulus patterns (.txt files)
+- Generates random/pseudo-random sequences
+- Supports various modulation codes (m-sequence, Gold codes)
+- Frame-rate adaptive sequencing
+
+### Hardware Drivers (`acquisition/`)
+
+Multiple EEG device drivers:
+- **`utopia_brainflow.py`** - BrainFlow supported devices (OpenBCI, etc.)
+- **`utopia_lsl.py`** - Lab Streaming Layer (LSL) interface
+- **`utopia_fakedata.py`** - Simulated data for testing
+- **`utopia_eego.py`** - ANT Neuro eego devices
+- And 10+ more device-specific drivers
+
+All drivers follow the same pattern:
+1. Connect to hardware
+2. Stream data packets to hub
+3. Handle trigger injection for testing
+
+### User Interfaces (`presentation/`)
+
+#### `selectionMatrix.py`
+Main selection interface with:
+- Grid of selectable objects (letters, symbols, images)
+- Configurable stimulus rendering
+- Calibration and prediction visualization
+- Feedback animations
+
+#### Other UIs:
+- `colorwheel.py` - Circular color selector
+- `tictactoe.py` - BCI-controlled game
+- `framerate_check.py` - Display validation tool
+
+### Signal Processing (`decoder/`)
+
+#### `decoder.py`
+Real-time BCI decoder:
+- Multi-channel EEG processing
+- Canonical Correlation Analysis (CCA)
+- Template matching algorithms
+- Online adaptation
+- Prediction generation
+
+#### `offline_analysis.ipynb`
+Jupyter notebook for:
+- Post-hoc data analysis
+- Performance evaluation
+- Algorithm parameter tuning
+- Visualization of results
+
+### Configuration (`configs/`)
+
+JSON configuration files for different BCI setups:
+- `online_bci.json` - Default online BCI config
+- `noisetag_bci.json` - Noisetag-specific settings
+- `debug.json` - Debug mode configuration
+- Device-specific configs (raspberry_pi_gpio.json, etc.)
+
+### Resources (`resources/`)
+
+#### `stimuli/`
+Pre-computed stimulus sequences:
+- `mgold_61_6521_psk_60hz.txt` - Gold code sequence for 60Hz displays
+- `mgold_65_6532_psk_60hz.txt` - Alternative Gold code
+- `rc5x5.txt` - 5x5 matrix code
+- `ssvep.txt` - SSVEP (Steady-State Visual Evoked Potential) patterns
+
+## Quick Start Examples
+
+### Testing Installation
+```bash
+# Run with simulated data
+python3 -m mindaffectBCI.online_bci --acquisition fakedata
+```
+
+### Basic BCI Application
+```python
+from mindaffectBCI import Noisetag
+
+# Initialize
+nt = Noisetag()
+nt.connect()
+
+# Configure for 9 objects
+nt.setnumActiveObjIDs(9)
+
+# Run calibration
+print("Starting calibration...")
+nt.startCalibration()
+
+# Run prediction
+print("Starting prediction...")
+nt.startPrediction()
+
+# Get selection
+selection = nt.getLastSelection()
+print(f"Selected: {selection}")
+```
+
+### Custom Stimulus Presentation
+```python
+from mindaffectBCI import Noisetag
+import pyglet
+
+nt = Noisetag()
+nt.connect()
+
+# Your custom rendering loop
+while True:
+    # Get stimulus state
+    stimulus_state = nt.getStimulusState()
+    
+    # Render your UI based on stimulus_state
+    render_ui(stimulus_state)
+    
+    # Send stimulus event
+    nt.sendStimulusState()
+```
 
 - `docs <docs/>`_ -- contains the documentation.
 
