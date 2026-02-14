@@ -30,11 +30,17 @@ from mindaffectBCI.decoder.utils import search_directories_for_file
 
 # graphic library
 import pyglet
+# back-compat: some pyglet builds may not expose OrderedGroup; fall back to Group
+try:
+    OrderedGroup = pyglet.graphics.OrderedGroup
+except Exception:
+    OrderedGroup = pyglet.graphics.Group
 window = None
 ss = None
 nframe = None
 isi = 1/60
 drawrate = 0  # rate at which draw is called
+_last_frame_error_ts = 0.0
 
 class Screen:
 
@@ -425,8 +431,8 @@ class ElectrodequalityScreen(Screen):
 
     def update_nch(self, nch):
         self.batch      = pyglet.graphics.Batch()
-        self.background = pyglet.graphics.OrderedGroup(0)
-        self.foreground = pyglet.graphics.OrderedGroup(1)
+        self.background = OrderedGroup(0)
+        self.foreground = OrderedGroup(1)
         winw, winh = self.window.get_size()
         r = (winh*.8)/(nch+1)
         # TODO[X] use bounding box
@@ -851,8 +857,8 @@ class SelectionGridScreen(Screen):
         self.objects=[None]*nsymb
         self.labels=[None]*nsymb
         self.batch = pyglet.graphics.Batch()
-        self.background = pyglet.graphics.OrderedGroup(0)
-        self.foreground = pyglet.graphics.OrderedGroup(1)
+        self.background = OrderedGroup(0)
+        self.foreground = OrderedGroup(1)
 
         # now create the display objects
         w=winw/gridwidth # cell-width
@@ -950,8 +956,15 @@ class SelectionGridScreen(Screen):
             self.isRunning=True
         self.framestart=self.noisetag.getTimeStamp()
         winflip = self.window.lastfliptime
-        if winflip > self.framestart or winflip < self.frameend:
+        # Occasionally timing mismatches occur; throttle error printing to avoid spam
+        try:
+            global _last_frame_error_ts
+        except NameError:
+            _last_frame_error_ts = 0.0
+        now = __import__('time').perf_counter()
+        if (winflip > self.framestart or winflip < self.frameend) and (now - _last_frame_error_ts) > 0.5:
             print("Error: frameend={} winflip={} framestart={}".format(self.frameend,winflip,self.framestart))
+            _last_frame_error_ts = now
         self.nframe = self.nframe+1
         if self.sendEvents:
             self.noisetag.sendStimulusState(timestamp=winflip)#self.frameend)#window.lastfliptime)
@@ -1109,7 +1122,7 @@ class ExptScreenManager(Screen):
                  pyglet.window.key.Q:ExptPhases.Quit}
 
     def __init__(self, window, noisetag, symbols, nCal:int=1, nPred:int=1, 
-                 calibration_trialduration=4.2, prediction_trialduration=10,  waitduration=1, feedbackduration=2,
+                calibration_trialduration=4.2, prediction_trialduration=10,  waitduration=1, feedbackduration=2,
                  framesperbit:int=None, fullscreen_stimulus:bool=True, 
                  selectionThreshold:float=.1, optosensor:bool=True,
                  simple_calibration:bool=False, calibration_symbols=None, extra_symbols=None, bgFraction=.1,
@@ -1506,9 +1519,9 @@ def load_symbols(fn):
     return symbols
 
 def run(symbols=None, ncal:int=10, npred:int=10, calibration_trialduration=4.2,  prediction_trialduration=20, feedbackduration:float=2, stimfile=None, selectionThreshold:float=.1,
-        framesperbit:int=1, optosensor:bool=True, fullscreen:bool=False, windowed:bool=None, 
-        fullscreen_stimulus:bool=True, simple_calibration=False, host=None, calibration_symbols=None, bgFraction=.1,
-        extra_symbols=None, calibration_args:dict=None, prediction_args:dict=None):
+    framesperbit:int=1, optosensor:bool=True, fullscreen:bool=False, windowed:bool=None, 
+    fullscreen_stimulus:bool=False, simple_calibration=False, host=None, calibration_symbols=None, bgFraction=.1,
+    extra_symbols=None, calibration_args:dict=None, prediction_args:dict=None, skip_connect:bool=False):
     """ run the selection Matrix with default settings
 
     Args:
@@ -1527,7 +1540,48 @@ def run(symbols=None, ncal:int=10, npred:int=10, calibration_trialduration=4.2, 
     """
     global nt, ss, window
     # N.B. init the noise-tag first, so asks for the IP
+    # Resolve stimfile from common package locations so presentation can run
+    # without the caller specifying an exact path.
     if stimfile is None:
+        fname = 'mgold_61_6521_psk_60hz.txt'
+    else:
+        fname = os.path.basename(stimfile)
+
+    # candidate locations to find the stim file (presentation resources, package resources)
+    candidates = []
+    # if caller provided an absolute or relative path, check that first
+    if stimfile is not None and os.path.isabs(stimfile):
+        candidates.append(stimfile)
+    if stimfile is not None and not os.path.isabs(stimfile):
+        candidates.append(os.path.abspath(stimfile))
+    # presentation/resources/stimuli
+    candidates.append(os.path.join(os.path.dirname(__file__), 'resources', 'stimuli', fname))
+    # package resources: ../resources/stimuli
+    candidates.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'resources', 'stimuli', fname))
+    # repo src root search
+    candidates.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'resources', 'stimuli', fname))
+
+    found = None
+    for c in candidates:
+        try:
+            if c and os.path.exists(os.path.abspath(c)):
+                found = os.path.abspath(c)
+                break
+        except Exception:
+            continue
+
+    if not found:
+        # last resort: try search_directories_for_file which searches common places
+        try:
+            found = search_directories_for_file(fname, os.path.dirname(os.path.abspath(__file__)),
+                                                os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
+        except Exception:
+            found = None
+
+    if found:
+        stimfile = found
+    else:
+        # fallback to previous default location (presentation/resources)
         stimfile = os.path.join(os.path.dirname(__file__), 'resources', 'stimuli', 'mgold_61_6521_psk_60hz.txt')
     if fullscreen is None and windowed is not None:
         fullscreen = not windowed
@@ -1560,6 +1614,96 @@ def run(symbols=None, ncal:int=10, npred:int=10, calibration_trialduration=4.2, 
                         bgFraction=bgFraction, 
                         calibration_args=calibration_args, calibration_trialduration=calibration_trialduration, 
                         prediction_args=prediction_args, prediction_trialduration=prediction_trialduration, feedbackduration=feedbackduration)
+
+    # If we're testing without a utopia hub, skip the initial connecting screen
+    if skip_connect:
+        ss.stage = ss.ExptPhases.MainMenu
+        ss.screen = ss.menu
+        ss.next_stage = None
+        # provide a lightweight fake utopia controller so Noisetag and Phases
+        # that require a controller can run without a real hub
+        class _FakeUtopia:
+            def __init__(self):
+                self.msgs = []
+                self._last_prediction = None
+                self._last_selection = (None, False)
+                self._last_signal_quality = None
+                self._sel_handlers = []
+                self._msg_handlers = []
+                self._pred_handlers = []
+
+            def isConnected(self):
+                return False
+
+            def getTimeStamp(self):
+                import time
+                return int(time.perf_counter()*1000) % (1<<31)
+
+            def getLastPrediction(self):
+                return self._last_prediction
+
+            def clearLastPrediction(self):
+                self._last_prediction = None
+
+            def getLastSelection(self):
+                return self._last_selection
+
+            def clearLastSelection(self):
+                self._last_selection = (None, False)
+
+            def newTarget(self):
+                return
+
+            def selection(self, objId):
+                self._last_selection = (objId, True)
+                for cb in list(self._sel_handlers):
+                    try:
+                        cb(objId)
+                    except Exception:
+                        pass
+
+            def getNewMessages(self):
+                return list(self.msgs)
+
+            def subscribe(self, msgs):
+                return
+
+            def addSelectionHandler(self, cb):
+                self._sel_handlers.append(cb)
+
+            def addMessageHandler(self, cb):
+                self._msg_handlers.append(cb)
+
+            def addPredictionHandler(self, cb):
+                self._pred_handlers.append(cb)
+
+            def removeSubscription(self, msgs):
+                return
+
+            def addSubscription(self, msgs):
+                return
+
+            def modeChange(self, mode):
+                return
+
+            def sendStimulusEvent(self, *args, **kwargs):
+                return
+
+            def log(self, msg):
+                return
+
+            def setTimeStampClock(self, ts):
+                return
+
+            def gethostport(self):
+                return 'none'
+
+            def getLastSignalQuality(self):
+                return self._last_signal_quality
+
+            def clearLastSignalQuality(self):
+                self._last_signal_quality = None
+        nt.utopiaController = _FakeUtopia()
 
     run_screen(ss,drawrate)
 
