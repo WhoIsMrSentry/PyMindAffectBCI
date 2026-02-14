@@ -1,7 +1,7 @@
 # mindaffectBCI
 
 ## Maintainer Notice
-**This repository has been modernized and is now maintained by Emir Hüseyin.**
+**This repository has been modernized and is now maintained by Emir Hamurcu.**
 
 The codebase has been refactored to follow modern Python packaging standards with improved modularity.
 
