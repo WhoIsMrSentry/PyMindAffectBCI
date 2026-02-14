@@ -954,7 +954,10 @@ class Noisetag:
             newmode (str): the new mode string to send to the hub/decoder
         """        
         if self.utopiaController:
-            self.utopiaController.modeChange(newmode)
+            try:
+                self.utopiaController.modeChange(newmode)
+            except Exception as e:
+                print(f"Warning: utopia modeChange failed: {e}")
 
     def subscribe(self,msgs):
         """tell the hub we will subscribe to this set of message IDs
