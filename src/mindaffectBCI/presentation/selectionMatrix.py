@@ -1126,7 +1126,7 @@ class ExptScreenManager(Screen):
                  framesperbit:int=None, fullscreen_stimulus:bool=True, 
                  selectionThreshold:float=.1, optosensor:bool=True,
                  simple_calibration:bool=False, calibration_symbols=None, extra_symbols=None, bgFraction=.1,
-                 calibration_args:dict=None, prediction_args:dict=None):
+                 calibration_args:dict=None, prediction_args:dict=None, allow_fullscreen:bool=False):
         self.window = window
         self.noisetag = noisetag
         self.symbols = symbols
@@ -1173,6 +1173,7 @@ class ExptScreenManager(Screen):
         self.prediction_args['feedbackframes'] = self.feedbackduration / isi
 
         self.fullscreen_stimulus = fullscreen_stimulus
+        self.allow_fullscreen = allow_fullscreen
         self.selectionThreshold = selectionThreshold
         self.simple_calibration = simple_calibration
         self.screen = None
@@ -1200,8 +1201,11 @@ class ExptScreenManager(Screen):
             self.next_stage = None
 
         if self.stage==self.ExptPhases.MainMenu: # main menu
-            if self.fullscreen_stimulus==True :
+            # always ensure we exit fullscreen when showing the main menu
+            try:
                 self.window.set_fullscreen(fullscreen=False)
+            except Exception:
+                pass
 
             print("main menu")
             self.menu.reset()
@@ -1239,8 +1243,11 @@ class ExptScreenManager(Screen):
 
         elif self.stage==self.ExptPhases.CalInstruct: # calibration instruct
             print("Calibration instruct")
-            if self.fullscreen_stimulus==True :
-                self.window.set_fullscreen(fullscreen=True)
+            if self.fullscreen_stimulus and self.allow_fullscreen:
+                try:
+                    self.window.set_fullscreen(fullscreen=True)
+                except Exception:
+                    pass
             self.instruct.set_text(self.calibrationInstruct)
             self.instruct.reset()
             self.screen=self.instruct
@@ -1264,16 +1271,22 @@ class ExptScreenManager(Screen):
 
         elif self.stage==self.ExptPhases.CalResults: # Calibration Results
             print("Calibration Results")
-            if self.fullscreen_stimulus==True :
-                self.window.set_fullscreen(fullscreen=True)
+            if self.fullscreen_stimulus and self.allow_fullscreen:
+                try:
+                    self.window.set_fullscreen(fullscreen=True)
+                except Exception:
+                    pass
             self.results.reset()
             self.screen=self.results
             self.next_stage = self.ExptPhases.MainMenu
 
         elif self.stage==self.ExptPhases.CuedPredInstruct: # pred instruct
             print("cued pred instruct")
-            if self.fullscreen_stimulus==True :
-                self.window.set_fullscreen(fullscreen=True)
+            if self.fullscreen_stimulus and self.allow_fullscreen:
+                try:
+                    self.window.set_fullscreen(fullscreen=True)
+                except Exception:
+                    pass
             self.instruct.set_text(self.cuedpredictionInstruct)
             self.instruct.reset()
             self.screen=self.instruct
@@ -1299,8 +1312,11 @@ class ExptScreenManager(Screen):
 
         elif self.stage==self.ExptPhases.PredInstruct: # pred instruct
             print("pred instruct")
-            if self.fullscreen_stimulus==True :
-                self.window.set_fullscreen(fullscreen=True)
+            if self.fullscreen_stimulus and self.allow_fullscreen:
+                try:
+                    self.window.set_fullscreen(fullscreen=True)
+                except Exception:
+                    pass
             self.instruct.set_text(self.predictionInstruct)
             self.instruct.reset()
             self.screen=self.instruct
@@ -1520,7 +1536,7 @@ def load_symbols(fn):
 
 def run(symbols=None, ncal:int=10, npred:int=10, calibration_trialduration=4.2,  prediction_trialduration=20, feedbackduration:float=2, stimfile=None, selectionThreshold:float=.1,
     framesperbit:int=1, optosensor:bool=True, fullscreen:bool=False, windowed:bool=None, 
-    fullscreen_stimulus:bool=False, simple_calibration=False, host=None, calibration_symbols=None, bgFraction=.1,
+    fullscreen_stimulus:bool=False, allow_fullscreen:bool=False, simple_calibration=False, host=None, calibration_symbols=None, bgFraction:.1,
     extra_symbols=None, calibration_args:dict=None, prediction_args:dict=None, skip_connect:bool=False):
     """ run the selection Matrix with default settings
 
@@ -1608,7 +1624,7 @@ def run(symbols=None, ncal:int=10, npred:int=10, calibration_trialduration=4.2, 
 
     # make the screen manager object which manages the app state
     ss = ExptScreenManager(window, nt, symbols, nCal=ncal, nPred=npred, framesperbit=framesperbit, 
-                        fullscreen_stimulus=fullscreen_stimulus, selectionThreshold=selectionThreshold, 
+                        fullscreen_stimulus=fullscreen_stimulus, allow_fullscreen=allow_fullscreen, selectionThreshold=selectionThreshold, 
                         optosensor=optosensor, simple_calibration=True, calibration_symbols=calibration_symbols, 
                         extra_symbols=extra_symbols,
                         bgFraction=bgFraction, 
