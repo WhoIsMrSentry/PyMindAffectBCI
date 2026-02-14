@@ -472,9 +472,13 @@ class UtopiaDataInterface:
         if mintime_ms is None:
             mintime_ms = self.mintime_ms
         if not self.isConnected():
+            # If no host is configured, avoid attempting to auto-connect here
+            # (prevents interactive prompt during test collection).
+            if self.host is None:
+                return [], 0, 0
             self.connect()
         if not self.isConnected():
-            return [],0,0
+            return [], 0, 0
 
         t0 = self.getTimeStamp()
         nsamp = 0
