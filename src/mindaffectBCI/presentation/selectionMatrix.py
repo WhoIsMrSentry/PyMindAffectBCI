@@ -1536,7 +1536,7 @@ def load_symbols(fn):
 
 def run(symbols=None, ncal:int=10, npred:int=10, calibration_trialduration=4.2,  prediction_trialduration=20, feedbackduration:float=2, stimfile=None, selectionThreshold:float=.1,
     framesperbit:int=1, optosensor:bool=True, fullscreen:bool=False, windowed:bool=None, 
-    fullscreen_stimulus:bool=False, allow_fullscreen:bool=False, simple_calibration=False, host=None, calibration_symbols=None, bgFraction:.1,
+    fullscreen_stimulus:bool=False, allow_fullscreen:bool=False, simple_calibration=False, host=None, calibration_symbols=None, bgFraction=.1,
     extra_symbols=None, calibration_args:dict=None, prediction_args:dict=None, skip_connect:bool=False):
     """ run the selection Matrix with default settings
 
