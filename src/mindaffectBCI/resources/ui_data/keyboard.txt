@@ -1,5 +1,5 @@
-# simple querty keyboard
-  q,   w,   e,   r,   t,   y,   u,   i,   o,   p
-  a,   s,   d,   f,   g,   h,   j,   k,   l,    
-   ,   z,   x,   c,   v,   b,   n,   m,    ,    
+# simple qwerty keyboard expanded with Turkish characters
+  q,   w,   e,   r,   t,   y,   u,   ı,   o,   p,   ğ,   ü
+  a,   s,   d,   f,   g,   h,   j,   k,   l,   ş,   i
+   ,   z,   x,   c,   v,   b,   n,   m,   ç,   ö,    ,    
 home,   ,    , " ", " ", " ",    ,    ,    ,   <-
