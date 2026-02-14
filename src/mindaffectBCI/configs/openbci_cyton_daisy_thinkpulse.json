@@ -1,0 +1,41 @@
+{
+    "acquisition": "cyton",
+    "acq_args": {
+        "host": "localhost",
+        "obciport": "COM4"
+    },
+
+    "decoder": "decoder",
+    "decoder_args": {
+        "stopband": [[45,65],[5.5,25,"bandpass"]],
+        "out_fs": 100,
+        "evtlabs": ["re","fe"],
+        "ftype": "butter",
+        "order": 6,
+        "cv": 5,
+        "label": "openbci_cyton_daisy_thinkpulse",
+        "tau_ms": 450,
+        "calplots": true,
+        "predplots": false,
+        "n_channels": 16,
+        "channel_names": [
+            "Fp1","Fp2","F3","F4",
+            "C3","C4","P3","P4",
+            "O1","O2","T7","T8",
+            "P7","P8","Oz","Cz"
+        ],
+        "reference": "Cz"
+    },
+
+    "presentation": "selectionMatrix",
+    "presentation_args": {
+        "ncal": 10,
+        "npred": 10,
+        "selectionThreshold": 0.1,
+        "symbols": "symbols.txt",
+        "framesperbit": 1,
+        "fullscreen": false,
+        "fullscreen_stimulus": true,
+        "host": "-"
+    }
+}
