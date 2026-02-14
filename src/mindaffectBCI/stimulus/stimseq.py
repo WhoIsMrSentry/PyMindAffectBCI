@@ -164,14 +164,21 @@ class StimSeq :
             [type]: [description]
         """  
 
-        st=StimSeq.readArray(f) # read the stim times
+        st = StimSeq.readArray(f)  # read the stim times (or possibly the only block)
         if len(st) > 1:
             raise Exception
         else:
-            st = st[0]  # un-nest
-        ss = StimSeq.readArray(f, len(st))  # read stim-seq - check same length
-        # transpose ss to have time in the major dimension
-        ss = transpose(ss)
+            strow = st[0]  # un-nest the single row
+
+        ss = StimSeq.readArray(f, len(strow))  # read stim-seq - check same length
+        # If no second block was present, treat the first row as the stim-seq
+        if len(ss) == 0:
+            ss = transpose([strow])
+            st = None
+        else:
+            # transpose ss to have time in the major dimension
+            ss = transpose(ss)
+            st = strow
         return StimSeq(st, ss)
 
     @staticmethod
@@ -203,8 +210,8 @@ class StimSeq :
             except:
                 pass
         
-        f = open(fname, 'r')
-        ss = StimSeq.fromString(f)
+        with open(fname, 'r') as f:
+            ss = StimSeq.fromString(f)
         return ss
 
     def toFile(self, fname):
